@@ -121,10 +121,10 @@ class RandomWords(object):
             random.seed(seed)
         # Get an initial token to start with
         if not init_token:
-            init_token = self.__get_itoken(init_token)
+            init_token = self._get_itoken(init_token)
         return ' '.join(w for w in GenWords(init_token, self.prob_dict, lenn))
 
-    def __get_itoken(self, itoken):
+    def _get_itoken(self, itoken):
         """Chooses a random token from the dictionary with uniform probability"""
         return random.choice(self.prob_dict.keys())
 

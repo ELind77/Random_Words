@@ -15,6 +15,11 @@ import cPickle as pickle
 import os
 
 
+# TODO:
+#  - Use gensim to translate all input text to lower ASCII
+#      - Translate html characters/accents to ASCII
+
+
 #
 # Helpers
 #

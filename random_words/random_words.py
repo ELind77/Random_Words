@@ -9,6 +9,8 @@ of a simple markov chain.
 
 __author__ = 'eric'
 
+import utils
+
 from collections import defaultdict
 import random
 import cPickle as pickle
@@ -23,18 +25,6 @@ import os
 #
 # Helpers
 #
-
-def ensure_directories_exist(path):
-    """
-    Checks whether directories containing the specified file exist
-    and attempts to create them is they don't.
-    :param path: str - A path, can optionally end in a file
-    :returns str - The path that was created
-    """
-    # http://stackoverflow.com/questions/273192/in-python-check-if-a-directory-exists-and-create-it-if-necessary
-    directory = os.path.dirname(path)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
 
 
 class FileGen(object):
@@ -118,7 +108,7 @@ class RandomWords(object):
 
     def save(self, path):
         """Pickle probability model for later"""
-        ensure_directories_exist(path)
+        utils.ensure_directories_exist(path)
         pickle.dump(self.prob_dict, open(path, 'wb'))
         print "Saved to: %s" % path
 
@@ -136,10 +126,10 @@ class RandomWords(object):
             random.seed(seed)
         # Get an initial token to start with
         if not init_token:
-            init_token = self.__get_itoken(init_token)
+            init_token = self._get_itoken(init_token)
         return ' '.join(w for w in GenWords(init_token, self.prob_dict, lenn))
 
-    def __get_itoken(self, itoken):
+    def _get_itoken(self, itoken):
         """Chooses a random token from the dictionary with uniform probability"""
         return random.choice(self.prob_dict.keys())
 

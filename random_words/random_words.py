@@ -15,6 +15,8 @@ from collections import defaultdict
 import random
 import cPickle as pickle
 import os
+# from gensim.corpora import Dictionary
+from nltk.utils import ngrams
 import itertools
 from six import PY3, iteritems, iterkeys, itervalues, string_types
 
@@ -69,7 +71,7 @@ class RandomWords(object):
         self.seed = None
         self.init_corpus_dir = corpus_dir
 
-        self.prob_dict = ProbDict()
+        self.prob_dict = LangModel()
         if corpus_dir:
             self.add_to_model(corpus_dir)
 
@@ -143,7 +145,7 @@ class GenWords(object):
         :param init_token: First token in the string
         :type init_token: str
         :param prob_dict: ProbDict to get terms from
-        :type prob_dict: ProbDict
+        :type prob_dict: LangModel
         :param lenn: Length of the string to product in tokens
         :type lenn: int
         :return:
@@ -162,22 +164,58 @@ class GenWords(object):
 
 
 # ProbDict
-class ProbDict(object):
+class LangModel(object):
     """
     A dictionary that maps a token to a hash of tokens and the frequency
     which which they have been observed to occur following the given token.
 
     Can also be used to retrieve a random word given the preceding token.
+
+
+    - Save/Load
+    - Token Dictionary
+    - Add Sequence
+    - Given a sequence, generate the next item
+    - Fit:
+        - Given a list of sequences, and an ngram degree,
+          intern the sequence probabilities
+    - Predict:
+        - Given a sequence, return it's log probability
+            - Given a threshold, return a 1 or a 0
+    - Score:
+        - Given a threshold, a list of sequences and a list of
+          tags, perform a cross-validation assessment of the
+          model
     """
 
-    def __init__(self):
-        self.map = {}
+    def __init__(self, dictionary=None, sequences=None):
+        self.probs = {}
+        self.dictionary = dictionary if dictionary is not None else Dictionary(prune_at=None)
+
+        if sequences is not None:
+            self.dictionary.add_documents(sequences)
 
     def keys(self):
-        return self.map.keys()
+        return self.probs.keys()
 
     def values(self):
-        return self.map.values()
+        return self.probs.values()
+
+
+    def fit(self, sequences):
+        """
+        Given a list of sequences and an ngram degree,
+        intern the frequencies of the items in the sequences.
+        :param sequences: a list of sequences
+        :return: None
+        """
+        for s in sequences:
+            self.__add_seq(s)
+
+    def __add_seq(self, seq):
+        # TODO: use dictionary
+        pass
+
 
     def add(self, curr, nxt):
         """
@@ -191,12 +229,12 @@ class ProbDict(object):
         if not curr or not nxt:
             print "Bad token given: %s\t%s" % (curr, nxt)
             return
-        if curr not in self.map:
-            self.map[curr] = defaultdict(int)
-        if nxt not in self.map:
-            self.map[nxt] = defaultdict(int)
+        if curr not in self.probs:
+            self.probs[curr] = defaultdict(int)
+        if nxt not in self.probs:
+            self.probs[nxt] = defaultdict(int)
         # Incf curr.next
-        self.map[curr][nxt] += 1
+        self.probs[curr][nxt] += 1
 
     def get(self, token):
         """
@@ -206,12 +244,12 @@ class ProbDict(object):
         :return: str
         """
         # Check that token is in dictionary
-        if token not in self.map or not self.map[token]:
+        if token not in self.probs or not self.probs[token]:
             print "Unknown token:  %s" % token
             return "<UNK>"
 
         # Choose a token
-        freqs = self.map[token]
+        freqs = self.probs[token]
         rnd = random.randint(1, sum(freqs.values()))
         summ = 0
 
@@ -238,7 +276,7 @@ class Dictionary(object):
 
     Heavily borrows from gensim corpora.Dictionary class.
     """
-    def __init__(self):
+    def __init__(self, prune_at=None):
         self.token2id = {}
         self.id2token = {}
 
@@ -260,3 +298,5 @@ class Dictionary(object):
         """Return a list of all token ids."""
         return list(self.token2id.values())
 
+    def add_documents(self, docs):
+        pass

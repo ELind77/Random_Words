@@ -57,7 +57,7 @@ class TestProbDict(object):
         cls.ws_pattern = re.compile(r"(\s)")
 
     def setUp(self):
-        self.prob_dict = rw.ProbDict()
+        self.prob_dict = rw.LangModel()
         self.test_tokens = tokenize(self.test_string)
 
     def add_tokens(self, tokens):
@@ -67,7 +67,7 @@ class TestProbDict(object):
             prev = t
 
     def test_prob_dict_init(self):
-        nosey.assert_is_instance(self.prob_dict, rw.ProbDict)
+        nosey.assert_is_instance(self.prob_dict, rw.LangModel)
         nosey.assert_is_instance(self.prob_dict.map, dict)
 
     def test_prob_dict_add_one(self):
@@ -133,7 +133,7 @@ class TestRandomWords(object):
 
     def test_init_empty_random_words(self):
         nosey.assert_is_instance(self.rw, rw.RandomWords)
-        nosey.assert_is_instance(self.rw.prob_dict, rw.ProbDict)
+        nosey.assert_is_instance(self.rw.prob_dict, rw.LangModel)
 
     def test_init_rw_with_dir(self):
         rw2 = rw.RandomWords(corpus_dir=DATA_DIR)

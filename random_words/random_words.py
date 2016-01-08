@@ -15,6 +15,8 @@ from collections import defaultdict
 import random
 import cPickle as pickle
 import os
+import itertools
+from six import PY3, iteritems, iterkeys, itervalues, string_types
 
 
 # TODO:
@@ -228,3 +230,33 @@ class ProbDict(object):
         # Error catch
         print "Something wrong here!"
         return "<UNK>"
+
+
+class Dictionary(object):
+    """
+    Dictionary mapping between tokens and integer ids.
+
+    Heavily borrows from gensim corpora.Dictionary class.
+    """
+    def __init__(self):
+        self.token2id = {}
+        self.id2token = {}
+
+    def __len__(self):
+        """
+        Return the number of token->id mappings in the dictionary.
+        :return: int
+        """
+        return len(self.token2id)
+
+    def __str__(self):
+        some_keys = list(itertools.islice(iterkeys(self.token2id), 5))
+        return "Dictionary(%i unique tokens: %s%s)" % (len(self), some_keys, '...' if len(self) > 5 else '')
+
+    def __iter__(self):
+        return iter(self.keys())
+
+    def keys(self):
+        """Return a list of all token ids."""
+        return list(self.token2id.values())
+
